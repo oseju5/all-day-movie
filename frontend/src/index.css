@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+  --color-orange-500: #f97316;
+}
+
+@layer base {
+  html, body {
+    @apply bg-white text-gray-900;
+    margin: 0;
+    padding: 0;
+  }
+}

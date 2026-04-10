@@ -1,0 +1,114 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'eclipse'
+}
+
+eclipse {
+	classpath {
+		file {
+			whenMerged { cp ->
+				cp.entries.findAll { it.path.contains('generated-sources/annotations') }.each {
+					it.path = 'src/main/generated'
+				}
+				cp.entries.findAll { it.path.contains('generated-test-sources/annotations') }.each {
+					it.path = 'src/test/generated'
+				}
+			}
+		}
+	}
+	synchronizationTasks 'eclipseJdtApt'
+}
+
+tasks.register('eclipseJdtApt') {
+	doLast {
+		def aptPrefs = file(".settings/org.eclipse.jdt.apt.core.prefs")
+		aptPrefs.parentFile.mkdirs()
+		aptPrefs.text = """\
+			eclipse.preferences.version=1
+			org.eclipse.jdt.apt.aptEnabled=true
+			org.eclipse.jdt.apt.genSrcDir=src/main/generated
+			org.eclipse.jdt.apt.genTestSrcDir=src/test/generated
+			org.eclipse.jdt.apt.reconcileEnabled=true
+			""".stripIndent()
+	}
+}
+
+group = 'com.yonsai'
+version = '0.0.1-SNAPSHOT'
+description = 'AI 챗봇을 탑재한 영화 추천 큐레이션이 포함된 영화 예매 플랫폼'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
+	
+	// JWT (JSON Web Token)
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// Validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// Jsoup for crawling
+	implementation 'org.jsoup:jsoup:1.17.2'
+
+	// Selenium for dynamic crawling
+	implementation 'org.seleniumhq.selenium:selenium-java:4.21.0'
+
+	// WebDriverManager for automatic driver setup
+	implementation 'io.github.bonigarcia:webdrivermanager:5.8.0'
+	
+	implementation 'commons-io:commons-io:2.11.0'
+
+	// Spring Cache Abstraction
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+	// Resilience4j for Circuit Breaker and Rate Limiting
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.2.0'
+
+	runtimeOnly 'com.h2database:h2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// STS/Eclipse 무한 빌드 루프 방지를 위해 어노테이션 프로세서 생성 경로를 분리
+tasks.withType(JavaCompile) {
+	options.generatedSourceOutputDirectory = file("src/main/generated")
+}
+
+

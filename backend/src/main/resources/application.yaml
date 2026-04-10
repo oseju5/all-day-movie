@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: backend
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  datasource:
+    # RDS 인스턴스의 엔드포인트를 입력하세요 (예: database-1.abc.ap-northeast-2.rds.amazonaws.com)
+    url: ${RDS_URL}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 애플리케이션 재시작 시 데이터 유지
+    properties:
+      hibernate:
+        format_sql: true # 로그를 예쁘게 보기 위해
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+
+resilience4j.circuitbreaker:
+  instances:
+    geminiApi:
+      registerHealthIndicator: true
+      slidingWindowSize: 10 # 최근 10개 요청 분석
+      minimumNumberOfCalls: 5 # 서킷 브레이커 판단을 위한 최소 요청 수
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 30s # 30초 동안 API 호출 차단 후 Half-Open
+      failureRateThreshold: 50 # 50% 이상 실패 시 서킷 브레이커 오픈
+      slowCallRateThreshold: 50 # 느린 요청 비율 50% 이상 시 오픈
+      slowCallDurationThreshold: 8s # 8초 이상 걸리면 느린 요청으로 간주
+    naverCrawling:
+      registerHealthIndicator: true
+      slidingWindowSize: 5
+      minimumNumberOfCalls: 3
+      waitDurationInOpenState: 60s # 크롤링은 무거우므로 1분간 차단
+      failureRateThreshold: 60
+      slowCallDurationThreshold: 15s # 크롤링 15초 이상 지연 시 오픈
